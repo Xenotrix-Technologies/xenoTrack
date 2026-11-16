@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { memberService, programService, feeService, settingsService } from '../../../services';
+import { memberService, programService, groupService, feeService, settingsService } from '../../../services';
 import { useAuth } from '../../../shared/context/AuthContext';
 import Modal from '../../../shared/components/ui/Modal';
 import { BsPencil, BsPersonCircle, BsPlus } from 'react-icons/bs';
@@ -60,8 +60,9 @@ export default function MemberProfile() {
 
   useEffect(() => {
     if (enrollForm.program_id) {
-      programService.listGroups({ program_id: enrollForm.program_id, status: 'active' })
-        .then(r => setGroups(r.data.data));
+      groupService.listGroups({ program_id: enrollForm.program_id, status: 'active' })
+        .then(r => setGroups(r.data?.data || []))
+        .catch(console.error);
     } else { setGroups([]); }
   }, [enrollForm.program_id]);
 
@@ -86,7 +87,7 @@ export default function MemberProfile() {
   const handleEnroll = async e => {
     e.preventDefault(); setEnrolling(true);
     try {
-      await programService.enroll({ member_id: Number(id), ...enrollForm });
+      await groupService.enroll({ member_id: Number(id), ...enrollForm });
       toast.success('Member enrolled'); setShowEnroll(false); load();
     } catch (err) { toast.error(err.response?.data?.message || 'Enrollment failed'); }
     finally { setEnrolling(false); }
@@ -269,7 +270,7 @@ export default function MemberProfile() {
                 {genderOptions.map(opt => (
                   <option key={opt.id} value={opt.name}>{opt.name}</option>
                 ))}
-                {editForm.gender && !genderOptions.some(opt => opt.name.toLowerCase() === editForm.gender.toLowerCase()) && (
+                {editForm.gender && !genderOptions.some(opt => opt?.name && opt.name.toLowerCase() === editForm.gender.toLowerCase()) && (
                   <option value={editForm.gender}>{editForm.gender} (Saved)</option>
                 )}
               </select>

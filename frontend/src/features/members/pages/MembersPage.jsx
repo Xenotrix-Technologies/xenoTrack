@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { memberService, programService, feeService, settingsService } from '../../../services';
+import { memberService, programService, groupService, settingsService } from '../../../services';
 import { useAuth } from '../../../shared/context/AuthContext';
 import Modal from '../../../shared/components/ui/Modal';
 import { BsPlus, BsSearch, BsFunnel, BsPencil, BsEye, BsPersonSlash } from 'react-icons/bs';
@@ -32,8 +32,8 @@ export default function MembersPage() {
     setLoading(true);
     try {
       const res = await memberService.list({ ...filters, page, limit: 20 });
-      setMembers(res.data.data);
-      setPagination(res.data.pagination);
+      setMembers(res.data?.data || []);
+      setPagination(res.data?.pagination || { total: 0, page: 1, totalPages: 1 });
     } catch { toast.error('Failed to load members'); }
     finally { setLoading(false); }
   }, [filters]);
@@ -42,13 +42,13 @@ export default function MembersPage() {
   useEffect(() => {
     Promise.all([
       programService.listPrograms({ status:'active' }),
-      programService.listGroups({ status:'active' }),
+      groupService.listGroups({ status:'active' }),
       settingsService.getGenderOptions({ status:'active' })
     ])
       .then(([p, g, gen]) => {
-        setPrograms(p.data.data);
-        setGroups(g.data.data);
-        setGenderOptions(gen.data.data || []);
+        setPrograms(p.data?.data || []);
+        setGroups(g.data?.data || []);
+        setGenderOptions(gen.data?.data || []);
       })
       .catch(console.error);
   }, []);
@@ -226,7 +226,7 @@ export default function MembersPage() {
                   <option key={opt.id} value={opt.name}>{opt.name}</option>
                 ))}
                 {/* If member's saved gender is not in the active options list, preserve and show it */}
-                {form.gender && !genderOptions.some(opt => opt.name.toLowerCase() === form.gender.toLowerCase()) && (
+                {form.gender && !genderOptions.some(opt => opt?.name && opt.name.toLowerCase() === form.gender.toLowerCase()) && (
                   <option value={form.gender}>{form.gender} (Saved)</option>
                 )}
               </select>

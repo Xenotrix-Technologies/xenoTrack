@@ -15,7 +15,7 @@ router.post(
   requireRole('admin'),
   [
     body('full_name').trim().notEmpty().withMessage('Full name is required'),
-    body('phone').optional({ checkFalsy: true }).isMobilePhone(),
+    body('phone').optional({ checkFalsy: true }).customSanitizer(v => typeof v === 'string' ? v.replace(/[\s-]/g, '') : v).isMobilePhone('any').withMessage('Invalid phone number'),
     body('email').optional({ checkFalsy: true }).isEmail().normalizeEmail(),
     body('dob').optional({ checkFalsy: true }).isDate(),
   ],
@@ -26,7 +26,12 @@ router.post(
 router.put(
   '/:id',
   requireRole('admin'),
-  [body('full_name').trim().notEmpty()],
+  [
+    body('full_name').trim().notEmpty().withMessage('Full name is required'),
+    body('phone').optional({ checkFalsy: true }).customSanitizer(v => typeof v === 'string' ? v.replace(/[\s-]/g, '') : v).isMobilePhone('any').withMessage('Invalid phone number'),
+    body('email').optional({ checkFalsy: true }).isEmail().normalizeEmail(),
+    body('dob').optional({ checkFalsy: true }).isDate(),
+  ],
   validate,
   (req, res, next) => memberController.update(req, res, next)
 );

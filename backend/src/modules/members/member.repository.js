@@ -1,17 +1,17 @@
 const db = require('../../core/config/database');
 
 class MemberRepository {
-  async findAndCountAll({ instituteId, search, status, programId, groupId, limit, offset }) {
+  async findAndCountAll({ instituteId, search, status, programId, groupId, limit = 20, offset = 0 }) {
     let where = ['m.institute_id = ?'];
     const params = [instituteId];
 
-    if (search) {
+    if (search && search.trim()) {
       where.push('(m.full_name LIKE ? OR m.member_code LIKE ? OR m.phone LIKE ?)');
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+      params.push(`%${search.trim()}%`, `%${search.trim()}%`, `%${search.trim()}%`);
     }
-    if (status) {
+    if (status && status.trim()) {
       where.push('m.status = ?');
-      params.push(status);
+      params.push(status.trim());
     }
     if (programId) {
       where.push("EXISTS (SELECT 1 FROM enrollments e WHERE e.member_id = m.id AND e.program_id = ? AND e.status = 'active')");
@@ -21,6 +21,9 @@ class MemberRepository {
       where.push("EXISTS (SELECT 1 FROM enrollments e WHERE e.member_id = m.id AND e.group_id = ? AND e.status = 'active')");
       params.push(groupId);
     }
+
+    const safeLimit = Math.max(1, parseInt(limit, 10) || 20);
+    const safeOffset = Math.max(0, parseInt(offset, 10) || 0);
 
     const whereStr = where.join(' AND ');
     const [[{ total }]] = await db.query(`SELECT COUNT(*) as total FROM members m WHERE ${whereStr}`, params);
@@ -35,10 +38,10 @@ class MemberRepository {
        GROUP BY m.id
        ORDER BY m.full_name
        LIMIT ? OFFSET ?`,
-      [...params, parseInt(limit), parseInt(offset)]
+      [...params, safeLimit, safeOffset]
     );
 
-    return { members, total: parseInt(total, 10) || 0 };
+    return { members: members || [], total: parseInt(total, 10) || 0 };
   }
 
   async findById(id, instituteId) {
@@ -65,7 +68,7 @@ class MemberRepository {
     const [payments] = await db.query(
       `SELECT p.*, u.full_name as collected_by_name
        FROM payments p
-       JOIN users u ON u.id = p.collected_by
+       LEFT JOIN users u ON u.id = p.collected_by
        WHERE p.member_id = ? ORDER BY p.payment_date DESC LIMIT 10`,
       [id]
     );
@@ -87,20 +90,28 @@ class MemberRepository {
   }
 
   async create(data) {
+    const dob = data.dob && typeof data.dob === 'string' && data.dob.trim() ? data.dob.trim().slice(0, 10) : null;
+    const phone = data.phone && typeof data.phone === 'string' && data.phone.trim() ? data.phone.trim() : null;
+    const email = data.email && typeof data.email === 'string' && data.email.trim() ? data.email.trim() : null;
+    const gender = data.gender && typeof data.gender === 'string' && data.gender.trim() ? data.gender.trim() : null;
+    const address = data.address && typeof data.address === 'string' && data.address.trim() ? data.address.trim() : null;
+    const emergencyContact = data.emergency_contact && typeof data.emergency_contact === 'string' && data.emergency_contact.trim() ? data.emergency_contact.trim() : null;
+    const notes = data.notes && typeof data.notes === 'string' && data.notes.trim() ? data.notes.trim() : null;
+
     const [result] = await db.query(
       `INSERT INTO members (institute_id, member_code, full_name, phone, email, dob, gender, address, emergency_contact, notes, registration_date, created_by)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         data.institute_id,
         data.member_code,
-        data.full_name,
-        data.phone || null,
-        data.email || null,
-        data.dob || null,
-        data.gender || null,
-        data.address || null,
-        data.emergency_contact || null,
-        data.notes || null,
+        data.full_name ? data.full_name.trim() : '',
+        phone,
+        email,
+        dob,
+        gender,
+        address,
+        emergencyContact,
+        notes,
         data.registration_date || new Date().toISOString().slice(0, 10),
         data.userId
       ]
@@ -109,18 +120,26 @@ class MemberRepository {
   }
 
   async update(id, data) {
+    const dob = data.dob && typeof data.dob === 'string' && data.dob.trim() ? data.dob.trim().slice(0, 10) : null;
+    const phone = data.phone && typeof data.phone === 'string' && data.phone.trim() ? data.phone.trim() : null;
+    const email = data.email && typeof data.email === 'string' && data.email.trim() ? data.email.trim() : null;
+    const gender = data.gender && typeof data.gender === 'string' && data.gender.trim() ? data.gender.trim() : null;
+    const address = data.address && typeof data.address === 'string' && data.address.trim() ? data.address.trim() : null;
+    const emergencyContact = data.emergency_contact && typeof data.emergency_contact === 'string' && data.emergency_contact.trim() ? data.emergency_contact.trim() : null;
+    const notes = data.notes && typeof data.notes === 'string' && data.notes.trim() ? data.notes.trim() : null;
+
     await db.query(
       `UPDATE members SET full_name=?, phone=?, email=?, dob=?, gender=?, address=?, emergency_contact=?, notes=?, updated_at=NOW()
        WHERE id=?`,
       [
-        data.full_name,
-        data.phone || null,
-        data.email || null,
-        data.dob || null,
-        data.gender || null,
-        data.address || null,
-        data.emergency_contact || null,
-        data.notes || null,
+        data.full_name ? data.full_name.trim() : '',
+        phone,
+        email,
+        dob,
+        gender,
+        address,
+        emergencyContact,
+        notes,
         id
       ]
     );

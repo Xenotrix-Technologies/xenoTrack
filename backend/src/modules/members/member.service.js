@@ -4,14 +4,16 @@ const { generateCode } = require('../../core/utils/helpers');
 
 class MemberService {
   async list({ instituteId, search, status, programId, groupId, page = 1, limit = 20 }) {
-    const offset = (page - 1) * limit;
+    const parsedPage = Math.max(1, parseInt(page, 10) || 1);
+    const parsedLimit = Math.max(1, parseInt(limit, 10) || 20);
+    const offset = (parsedPage - 1) * parsedLimit;
     const { members, total } = await memberRepository.findAndCountAll({
       instituteId,
       search,
       status,
       programId,
       groupId,
-      limit,
+      limit: parsedLimit,
       offset
     });
 
@@ -19,9 +21,9 @@ class MemberService {
       members,
       pagination: {
         total,
-        page: parseInt(page, 10),
-        limit: parseInt(limit, 10),
-        totalPages: Math.ceil(total / limit)
+        page: parsedPage,
+        limit: parsedLimit,
+        totalPages: total === 0 ? 1 : Math.ceil(total / parsedLimit)
       }
     };
   }
