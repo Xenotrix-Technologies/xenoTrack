@@ -27,7 +27,7 @@ class SettingsService {
           await conn.query(
             `INSERT INTO institute_settings (institute_id, setting_key, setting_value, updated_by)
              VALUES (?, ?, ?, ?)
-             ON CONFLICT (institute_id, setting_key) DO UPDATE SET setting_value = EXCLUDED.setting_value, updated_by = EXCLUDED.updated_by`,
+             ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_by = VALUES(updated_by)`,
             [instituteId, key, value, userId]
           );
         }

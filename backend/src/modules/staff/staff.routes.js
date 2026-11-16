@@ -15,7 +15,7 @@ router.post(
   [
     body('full_name').trim().notEmpty(),
     body('email').isEmail().normalizeEmail(),
-    body('password').isLength({ min: 8 })
+    body('password').isLength({ min: 6 })
   ],
   validate,
   (req, res, next) => staffController.create(req, res, next)
@@ -30,7 +30,7 @@ router.put(
 
 router.post(
   '/:id/reset-password',
-  [body('new_password').isLength({ min: 8 })],
+  [body('new_password').isLength({ min: 6 })],
   validate,
   (req, res, next) => staffController.resetPassword(req, res, next)
 );

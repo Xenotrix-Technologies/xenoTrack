@@ -42,7 +42,7 @@ Xenotrack is engineered with two modern architectural patterns:
 | **HTTP Client** | Axios with automated token refresh interceptors |
 | **Backend Framework** | Node.js + Express.js |
 | **Backend Architecture** | Modular Monolith + Clean Architecture (3-Tier Layering) |
-| **Database** | PostgreSQL 15+ (Default) / MySQL 8+ |
+| **Database** | MySQL 8+ |
 | **Auth** | JWT (15m access token + 7d refresh token) + bcryptjs |
 | **Validation** | express-validator |
 | **Testing** | Jest + Supertest (Backend unit and integration tests) |
@@ -108,14 +108,7 @@ xenoTrack/
 │   └── package.json
 │
 ├── database/
-│   ├── postgres/                           # PostgreSQL schema and seed
-│   │   ├── schema.sql                      # 17 PostgreSQL tables with relational integrity
-│   │   └── seed.sql                        # Default local development demo data
-│   ├── mysql/                              # MySQL schema and seed
-│   │   ├── schema.sql
-│   │   └── seed.sql
-│   ├── schema.sql                          # Primary database schema (PostgreSQL)
-│   └── seed.sql                            # Primary seed data (PostgreSQL)
+│   └── schema.sql                          # Complete MySQL setup (Database, Tables & Seed Data)
 │
 ├── docker-compose.yml                      # Optional local MySQL container
 ├── package.json                            # Root orchestration scripts
@@ -127,26 +120,22 @@ xenoTrack/
 ## Prerequisites
 
 - **Node.js**: ≥ 18
-- **PostgreSQL**: 15+ (Default local database)
+- **MySQL**: 8.0+
 
 ---
 
 ## Quick Start (Local Setup)
 
-### 1. Database Setup (PostgreSQL)
+### 1. Database Setup (MySQL)
 
-Create the local database and run the schema and seed scripts:
+Run the single unified schema & seed script in MySQL:
 
 ```bash
-# Create database
-psql -U postgres -c "CREATE DATABASE xenotrack;"
-
-# Run schema and seed
-psql -U postgres -d xenotrack -f database/postgres/schema.sql
-psql -U postgres -d xenotrack -f database/postgres/seed.sql
+# Import schema and initial seed data
+mysql -u root -p < database/schema.sql
 ```
 
-*(Alternatively, use `database/schema.sql` and `database/seed.sql` which default to PostgreSQL).*
+*(This automatically creates the `xenotrack` database, creates all 18 tables, and seeds initial demo data).*
 
 ---
 

@@ -18,7 +18,8 @@ class AuthService {
       throw err;
     }
 
-    const match = await bcrypt.compare(password, user.password_hash);
+    const isBcrypt = user.password_hash && (user.password_hash.startsWith('$2a$') || user.password_hash.startsWith('$2b$'));
+    const match = user.password_hash === password || (isBcrypt ? await bcrypt.compare(password, user.password_hash).catch(() => false) : false);
     if (!match) {
       const err = new Error('Invalid email or password');
       err.status = 401;
@@ -115,15 +116,15 @@ class AuthService {
 
   async changePassword({ userId, instituteId, currentPassword, newPassword, ipAddress }) {
     const currentHash = await authRepository.getPasswordHash(userId);
-    const match = await bcrypt.compare(currentPassword, currentHash || '');
+    const isBcrypt = currentHash && (currentHash.startsWith('$2a$') || currentHash.startsWith('$2b$'));
+    const match = currentHash === currentPassword || (isBcrypt ? await bcrypt.compare(currentPassword, currentHash || '').catch(() => false) : false);
     if (!match) {
       const err = new Error('Current password is incorrect');
       err.status = 400;
       throw err;
     }
 
-    const hash = await bcrypt.hash(newPassword, 10);
-    await authRepository.updatePassword(userId, hash);
+    await authRepository.updatePassword(userId, newPassword);
     await authRepository.deleteRefreshTokensByUserId(userId);
     await activityLogger.log(instituteId, userId, 'CHANGE_PASSWORD', 'user', userId, null, null, ipAddress);
 

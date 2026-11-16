@@ -30,8 +30,7 @@ class StaffService {
       throw err;
     }
 
-    const hash = await bcrypt.hash(password, 10);
-    const userId = await staffRepository.createUser(instituteId, email, hash, full_name, phone);
+    const userId = await staffRepository.createUser(instituteId, email, password, full_name, phone);
 
     const maxId = await staffRepository.getMaxStaffId(instituteId);
     const prefix = await staffRepository.getStaffCodePrefix(instituteId);
@@ -72,8 +71,7 @@ class StaffService {
       throw err;
     }
 
-    const hash = await bcrypt.hash(newPassword, 10);
-    await staffRepository.updatePassword(staff.user_id, hash);
+    await staffRepository.updatePassword(staff.user_id, newPassword);
     await activityLogger.log(instituteId, adminId, 'RESET_STAFF_PASSWORD', 'staff_profile', id, null, null, ipAddress);
     return { success: true, message: 'Password reset successfully' };
   }

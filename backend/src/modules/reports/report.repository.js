@@ -142,7 +142,7 @@ class ReportRepository {
     const [records] = await db.query(
       `SELECT fr.*, m.full_name as member_name, m.member_code, m.phone,
               fp.name as fee_plan_name,
-              COALESCE(CURRENT_DATE - fr.due_date, 0) as days_overdue
+              DATEDIFF(CURDATE(), fr.due_date) as days_overdue
        FROM fee_records fr
        JOIN members m ON m.id = fr.member_id
        LEFT JOIN fee_plans fp ON fp.id = fr.fee_plan_id

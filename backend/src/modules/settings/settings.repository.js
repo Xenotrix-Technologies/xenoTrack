@@ -71,9 +71,8 @@ class SettingsRepository {
       const defaults = ['Male', 'Female', 'Other', 'Prefer not to say'];
       for (let i = 0; i < defaults.length; i++) {
         await db.query(
-          `INSERT INTO gender_options (institute_id, name, status, display_order)
-           VALUES (?, ?, 'active', ?)
-           ON CONFLICT DO NOTHING`,
+          `INSERT IGNORE INTO gender_options (institute_id, name, status, display_order)
+           VALUES (?, ?, 'active', ?)`,
           [instituteId, defaults[i], i + 1]
         );
       }
@@ -112,10 +111,10 @@ class SettingsRepository {
 
   async createGenderOption(instituteId, name, status, displayOrder) {
     const [result] = await db.query(
-      'INSERT INTO gender_options (institute_id, name, status, display_order) VALUES (?, ?, ?, ?) RETURNING *',
+      'INSERT INTO gender_options (institute_id, name, status, display_order) VALUES (?, ?, ?, ?)',
       [instituteId, name, status, displayOrder]
     );
-    return result[0] || { id: result.insertId, name, status, display_order: displayOrder };
+    return { id: result.insertId, institute_id: instituteId, name, status, display_order: displayOrder };
   }
 
   async updateGenderOption(id, instituteId, name, status, displayOrder) {

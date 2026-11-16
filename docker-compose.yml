@@ -13,8 +13,7 @@ services:
       - "3306:3306"
     volumes:
       - xenotrack_mysql_data:/var/lib/mysql
-      - ./database/mysql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-      - ./database/mysql/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
 volumes:

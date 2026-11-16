@@ -80,11 +80,11 @@ class DashboardRepository {
 
   async getMonthlyCollection(instituteId) {
     const [monthlyCollection] = await db.query(
-      `SELECT TO_CHAR(payment_date, 'YYYY-MM') as month,
+      `SELECT DATE_FORMAT(payment_date, '%Y-%m') as month,
               COALESCE(SUM(amount),0) as total
-       FROM payments WHERE institute_id = ? AND is_reversed = FALSE
-         AND payment_date >= CURRENT_DATE - INTERVAL '6 month'
-       GROUP BY 1 ORDER BY 1`,
+       FROM payments WHERE institute_id = ? AND is_reversed = 0
+         AND payment_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+       GROUP BY month ORDER BY month`,
       [instituteId]
     );
     return monthlyCollection;
@@ -97,7 +97,7 @@ class DashboardRepository {
               COUNT(ar.id) as total
        FROM attendance_sessions s
        LEFT JOIN attendance_records ar ON ar.session_id = s.id
-       WHERE s.institute_id = ? AND s.session_date >= CURRENT_DATE - INTERVAL '7 day'
+       WHERE s.institute_id = ? AND s.session_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
        GROUP BY s.session_date ORDER BY s.session_date`,
       [instituteId]
     );
@@ -152,7 +152,7 @@ class DashboardRepository {
        FROM attendance_sessions s
        JOIN \`groups\` g ON g.id = s.group_id
        LEFT JOIN attendance_records ar ON ar.session_id = s.id
-       WHERE s.group_id IN (?) AND s.session_date >= CURRENT_DATE - INTERVAL '7 day'
+       WHERE s.group_id IN (?) AND s.session_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
        GROUP BY s.id, g.name, s.session_date, s.status ORDER BY s.session_date DESC LIMIT 10`,
       [groupIds]
     );

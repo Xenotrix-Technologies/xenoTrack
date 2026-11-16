@@ -40,9 +40,8 @@ router.post(
   [
     body('currentPassword').notEmpty(),
     body('newPassword')
-      .isLength({ min: 8 })
-      .matches(/^(?=.*[A-Z])(?=.*\d)/)
-      .withMessage('Password must be at least 8 characters with one uppercase and one number')
+      .isLength({ min: 6 })
+      .withMessage('Password must be at least 6 characters')
   ],
   validate,
   (req, res, next) => authController.changePassword(req, res, next)

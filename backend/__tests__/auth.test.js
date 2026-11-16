@@ -39,6 +39,53 @@ describe('Auth API', () => {
     expect(res.body.message).toMatch(/invalid/i);
   });
 
+  it('POST /api/auth/login - valid plain-text password returns tokens', async () => {
+    db.query.mockResolvedValueOnce([[
+      {
+        id: 1,
+        institute_id: 1,
+        email: 'admin@xenotrack.com',
+        password_hash: '12345xeno',
+        role: 'admin',
+        full_name: 'Super Admin',
+        is_active: 1,
+        can_collect_fees: 1,
+        can_edit_attendance: 1
+      }
+    ]]);
+    db.query.mockResolvedValue([{}]);
+
+    const res = await request(app).post('/api/auth/login').send({
+      email: 'admin@xenotrack.com',
+      password: '12345xeno'
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.accessToken).toBeDefined();
+    expect(res.body.data.user.email).toBe('admin@xenotrack.com');
+  });
+
+  it('POST /api/auth/login - wrong plain-text password returns 401', async () => {
+    db.query.mockResolvedValueOnce([[
+      {
+        id: 1,
+        institute_id: 1,
+        email: 'admin@xenotrack.com',
+        password_hash: '12345xeno',
+        role: 'admin',
+        full_name: 'Super Admin',
+        is_active: 1
+      }
+    ]]);
+
+    const res = await request(app).post('/api/auth/login').send({
+      email: 'admin@xenotrack.com',
+      password: 'wrongpassword'
+    });
+    expect(res.status).toBe(401);
+    expect(res.body.message).toMatch(/invalid/i);
+  });
+
   it('GET /api/auth/me - no token returns 401', async () => {
     const res = await request(app).get('/api/auth/me');
     expect(res.status).toBe(401);

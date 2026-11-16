@@ -20,7 +20,7 @@ class GroupRepository {
     const [groups] = await db.query(
       `SELECT g.*, p.name as program_name,
               COUNT(DISTINCT e.member_id) as member_count,
-              STRING_AGG(DISTINCT u.full_name, ', ' ORDER BY u.full_name) as staff_names
+              GROUP_CONCAT(DISTINCT u.full_name ORDER BY u.full_name SEPARATOR ', ') as staff_names
        FROM \`groups\` g
        JOIN programs p ON p.id = g.program_id
        LEFT JOIN enrollments e ON e.group_id = g.id AND e.status = 'active'
@@ -108,8 +108,8 @@ class GroupRepository {
     return db.query(
       `INSERT INTO group_staff_assignments (group_id, staff_profile_id, is_primary)
        VALUES (?, ?, ?)
-       ON CONFLICT (group_id, staff_profile_id) DO UPDATE SET is_primary = EXCLUDED.is_primary`,
-      [groupId, staffProfileId, isPrimary ? true : false]
+       ON DUPLICATE KEY UPDATE is_primary = VALUES(is_primary)`,
+      [groupId, staffProfileId, isPrimary ? 1 : 0]
     );
   }
 

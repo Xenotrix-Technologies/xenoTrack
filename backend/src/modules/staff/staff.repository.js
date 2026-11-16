@@ -15,7 +15,7 @@ class StaffRepository {
 
     const [staff] = await db.query(
       `SELECT sp.*, sp.id as staff_profile_id, u.full_name, u.email, u.phone, u.is_active,
-              STRING_AGG(DISTINCT g.name, ', ' ORDER BY g.name) as assigned_groups
+              GROUP_CONCAT(DISTINCT g.name ORDER BY g.name SEPARATOR ', ') as assigned_groups
        FROM staff_profiles sp
        JOIN users u ON u.id = sp.user_id
        LEFT JOIN group_staff_assignments gsa ON gsa.staff_profile_id = sp.id

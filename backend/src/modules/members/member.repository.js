@@ -27,7 +27,7 @@ class MemberRepository {
 
     const [members] = await db.query(
       `SELECT m.id, m.member_code, m.full_name, m.phone, m.email, m.gender, m.status, m.registration_date, m.profile_photo,
-              STRING_AGG(DISTINCT p.name, ', ' ORDER BY p.name) as programs
+              GROUP_CONCAT(DISTINCT p.name ORDER BY p.name SEPARATOR ', ') as programs
        FROM members m
        LEFT JOIN enrollments e ON e.member_id = m.id AND e.status = 'active'
        LEFT JOIN programs p ON p.id = e.program_id
