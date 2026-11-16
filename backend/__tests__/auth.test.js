@@ -1,20 +1,22 @@
 const request = require('supertest');
-const app = require('../../src/app');
 
-// Mock the database
-jest.mock('../../src/config/database', () => {
-  const mockQuery = jest.fn();
-  const mockGetConnection = jest.fn(() => ({
+// Mock the database (Jest hoists jest.mock)
+jest.mock('../src/core/config/database', () => {
+  const query = jest.fn();
+  const getConnection = jest.fn(() => ({
     beginTransaction: jest.fn(),
     commit: jest.fn(),
     rollback: jest.fn(),
     release: jest.fn(),
-    query: mockQuery,
+    query,
   }));
-  return { query: mockQuery, getConnection: mockGetConnection };
+  return { query, getConnection };
 });
 
-const db = require('../../src/config/database');
+jest.mock('../src/config/database', () => require('../src/core/config/database'));
+
+const db = require('../src/core/config/database');
+const app = require('../src/app');
 
 describe('Auth API', () => {
   beforeEach(() => jest.clearAllMocks());

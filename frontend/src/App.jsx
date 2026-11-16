@@ -1,29 +1,21 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import AppLayout from './layouts/AppLayout';
-import LoginPage from './pages/LoginPage';
-import AdminDashboard from './pages/AdminDashboard';
-import StaffDashboard from './pages/StaffDashboard';
-import MembersPage from './pages/MembersPage';
-import MemberProfile from './pages/MemberProfile';
-import ProgramsPage from './pages/ProgramsPage';
-import GroupsPage from './pages/GroupsPage';
-import GroupDetail from './pages/GroupDetail';
-import StaffPage from './pages/StaffPage';
-import AttendancePage from './pages/AttendancePage';
-import MarkAttendance from './pages/MarkAttendance';
-import FeePlansPage from './pages/FeePlansPage';
-import FeeRecordsPage from './pages/FeeRecordsPage';
-import PaymentsPage from './pages/PaymentsPage';
-import ReceiptPage from './pages/ReceiptPage';
-import AttendanceReport from './pages/AttendanceReport';
-import CollectionReport from './pages/CollectionReport';
-import OutstandingReport from './pages/OutstandingReport';
-import SettingsPage from './pages/SettingsPage';
-import ActivityLogsPage from './pages/ActivityLogsPage';
-import ProfilePage from './pages/ProfilePage';
-import NotFoundPage from './pages/NotFoundPage';
+import { AuthProvider, useAuth } from './shared/context/AuthContext';
+import AppLayout from './shared/components/layout/AppLayout';
+import NotFoundPage from './shared/pages/NotFoundPage';
+
+// Feature Pages
+import { LoginPage } from './features/auth';
+import { AdminDashboard, StaffDashboard } from './features/dashboard';
+import { MembersPage, MemberProfile } from './features/members';
+import { ProgramsPage } from './features/programs';
+import { GroupsPage, GroupDetail } from './features/groups';
+import { StaffPage, ProfilePage } from './features/staff';
+import { AttendancePage, MarkAttendance } from './features/attendance';
+import { FeePlansPage, FeeRecordsPage } from './features/fees';
+import { PaymentsPage, ReceiptPage } from './features/payments';
+import { AttendanceReport, CollectionReport, OutstandingReport } from './features/reports';
+import { SettingsPage, ActivityLogsPage } from './features/settings';
 
 function ProtectedRoute({ children, adminOnly }) {
   const { user, loading } = useAuth();

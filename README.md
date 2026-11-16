@@ -1,23 +1,33 @@
 # Xenotrack — Institute Management System
 
-A full-stack, production-grade institute management system for tuition centres, gyms, sports academies, dance classes, and any membership or class-based organisation.
+A full-stack, local-first institute management system for tuition centres, gyms, sports academies, dance classes, and any membership or class-based organisation.
+
+---
+
+## Architectural Overview
+
+Xenotrack is engineered with two modern architectural patterns:
+1. **Frontend**: **Feature-Based + Layered Architecture**
+2. **Backend**: **Modular Monolith + Clean Architecture (Controller -> Service -> Repository)**
+
+---
 
 ## Features
 
 | Module | Capabilities |
 |---|---|
 | **Auth** | JWT login, refresh tokens, role-based access (Admin / Staff), bcrypt passwords |
-| **Dashboard** | Stats, charts (Recharts), recent activity, attendance trends |
-| **Members** | Full CRUD, search, filters, profile, enrollment history |
-| **Programs** | Create and manage programs with fee plan defaults |
-| **Groups** | Groups with schedules, staff assignments, capacity |
-| **Attendance** | Session-based marking, bulk entry, edit window, history |
-| **Fee Plans** | Configurable billing cycles, late fees, discounts |
-| **Fee Records** | Auto-calculated balances, statuses, overdue tracking |
-| **Payments** | Full/partial payments, receipts, reversal audit trail |
-| **Reports** | Attendance, collection, outstanding — with CSV export |
-| **Settings** | Institute profile, system settings, activity logs |
-| **Security** | Rate limiting, parameterized SQL, JWT, RBAC |
+| **Dashboard** | Metrics, dynamic charts (Recharts), recent activity, attendance trends |
+| **Members** | Full CRUD, search, status filters, member profile, enrollment history |
+| **Programs** | Create and manage academic / training programs with default fee plans |
+| **Groups** | Batch & group management with schedules, assigned staff, capacities |
+| **Attendance** | Session-based marking, batch entry, edit window, attendance history |
+| **Fee Plans** | Configurable billing cycles, late fee grace periods, discounts |
+| **Fee Records** | Auto-calculated balances, status tracking, overdue monitoring |
+| **Payments** | Full/partial payments, printable receipts, reversible audit transactions |
+| **Reports** | Attendance, fee collections, outstanding balances with CSV export |
+| **Settings** | Institute configuration, custom fields, audit activity logs |
+| **Security** | Rate limiting, parameterized SQL queries, JWT verification, RBAC |
 
 ---
 
@@ -25,187 +35,220 @@ A full-stack, production-grade institute management system for tuition centres, 
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 18 + Vite, React Router v6 |
-| UI | Vanilla CSS (custom design system) + React Icons + Recharts |
-| HTTP | Axios with auto token refresh interceptors |
-| Backend | Node.js + Express.js |
-| Database | MySQL 8 |
-| Auth | JWT (access 15m + refresh 7d) + bcryptjs |
-| Validation | express-validator |
-
----
-
-## Prerequisites
-
-- Node.js ≥ 18
-- MySQL 8 (or Docker)
-
----
-
-## Quick Start
-
-### Option A — Docker MySQL (Recommended)
-
-```bash
-# Start MySQL with Docker
-docker-compose up -d
-
-# Wait ~15 seconds for MySQL to initialise, then proceed below
-```
-
-> Docker will automatically run `schema.sql` and `seed.sql`.
-
-### Option B — Existing MySQL
-
-```bash
-mysql -u root -p < database/schema.sql
-mysql -u root -p xenotrack < database/seed.sql
-```
-
----
-
-### 1. Backend Setup
-
-```bash
-cd backend
-cp .env.example .env
-# Edit .env with your DB credentials
-npm install
-npm run dev
-```
-
-Backend runs on **http://localhost:5000**
-
-### 2. Frontend Setup
-
-```bash
-cd frontend
-cp .env.example .env.local
-npm install
-npm run dev
-```
-
-Frontend runs on **http://localhost:3000**
-
----
-
-## Demo Credentials (local dev only)
-
-| Role | Email | Password |
-|---|---|---|
-| **Admin** | admin@xenotrack.local | Admin@1234 |
-| **Staff** | staff@xenotrack.local | Staff@1234 |
+| **Frontend Framework** | React 19 + Vite |
+| **Frontend Architecture** | Feature-Based + Layered Architecture (`features/`, `shared/`) |
+| **Routing & State** | React Router v7, React Context API (`AuthContext`) |
+| **UI & Styling** | Custom CSS Design System (`styles/global.css`) + React Icons + Recharts |
+| **HTTP Client** | Axios with automated token refresh interceptors |
+| **Backend Framework** | Node.js + Express.js |
+| **Backend Architecture** | Modular Monolith + Clean Architecture (3-Tier Layering) |
+| **Database** | PostgreSQL 15+ (Default) / MySQL 8+ |
+| **Auth** | JWT (15m access token + 7d refresh token) + bcryptjs |
+| **Validation** | express-validator |
+| **Testing** | Jest + Supertest (Backend unit and integration tests) |
 
 ---
 
 ## Project Structure
 
 ```
-Xenotrack/
+xenoTrack/
 ├── backend/
 │   ├── src/
-│   │   ├── app.js              # Express app
-│   │   ├── server.js           # Entry point
-│   │   ├── config/             # DB pool, JWT utils
-│   │   ├── controllers/        # auth, dashboard, member, program, staff, attendance, fee, payment, report, settings
-│   │   ├── middleware/         # auth, validate, errorHandler
-│   │   ├── routes/             # auth, dashboard, members, programs, staff, attendance, fees, reports, settings
-│   │   └── utils/              # activityLogger, helpers
-│   ├── __tests__/              # Jest tests
-│   ├── .env.example
+│   │   ├── app.js                          # Express app configuration & modular route mounting
+│   │   ├── server.js                       # Server entry point & DB connection check
+│   │   ├── core/                           # Shared cross-cutting concerns & foundational layer
+│   │   │   ├── config/                     # Database pool (PostgreSQL/MySQL), JWT configuration
+│   │   │   ├── database/                   # Centralized database interface
+│   │   │   ├── middleware/                 # auth, validate, errorHandler
+│   │   │   └── utils/                      # activityLogger, helpers
+│   │   └── modules/                        # Domain feature modules (Modular Monolith)
+│   │       ├── auth/                       # controller, service, repository, routes
+│   │       ├── dashboard/                  # controller, service, repository, routes
+│   │       ├── members/                    # controller, service, repository, routes
+│   │       ├── programs/                   # controller, service, repository, routes
+│   │       ├── groups/                     # controller, service, repository, routes (groups & enrollments)
+│   │       ├── staff/                      # controller, service, repository, routes
+│   │       ├── attendance/                 # controller, service, repository, routes
+│   │       ├── fees/                       # controller, service, repository, routes
+│   │       ├── payments/                   # controller, service, repository, routes
+│   │       ├── reports/                    # controller, service, repository, routes
+│   │       └── settings/                   # controller, service, repository, routes
+│   ├── __tests__/                          # Jest test suites (auth, calculations)
+│   ├── .env.example                        # Backend environment template
 │   └── package.json
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── App.jsx             # Routing
-│   │   ├── main.jsx            # Entry point
-│   │   ├── context/            # AuthContext
-│   │   ├── services/           # api.js + all service functions
-│   │   ├── layouts/            # AppLayout
-│   │   ├── components/         # Sidebar, Topbar, Modal
-│   │   ├── pages/              # All page components (18 pages)
-│   │   └── styles/             # global.css (design system)
-│   ├── .env.example
+│   │   ├── App.jsx                         # Main router & route guard definitions
+│   │   ├── main.jsx                        # Application root render & toast container
+│   │   ├── features/                       # Feature-sliced modules
+│   │   │   ├── auth/                       # pages (LoginPage), services, index
+│   │   │   ├── dashboard/                  # pages (AdminDashboard, StaffDashboard), services, index
+│   │   │   ├── members/                    # pages (MembersPage, MemberProfile), services, index
+│   │   │   ├── programs/                   # pages (ProgramsPage), services, index
+│   │   │   ├── groups/                     # pages (GroupsPage, GroupDetail), services, index
+│   │   │   ├── staff/                      # pages (StaffPage, ProfilePage), services, index
+│   │   │   ├── attendance/                 # pages (AttendancePage, MarkAttendance), services, index
+│   │   │   ├── fees/                       # pages (FeePlansPage, FeeRecordsPage), services, index
+│   │   │   ├── payments/                   # pages (PaymentsPage, ReceiptPage), services, index
+│   │   │   ├── reports/                    # pages (AttendanceReport, CollectionReport, OutstandingReport), services, index
+│   │   │   └── settings/                   # pages (SettingsPage, ActivityLogsPage), services, index
+│   │   ├── shared/                         # Reusable shared layer
+│   │   │   ├── api/                        # Axios instance with interceptors
+│   │   │   ├── components/
+│   │   │   │   ├── layout/                 # AppLayout, Sidebar, Topbar
+│   │   │   │   └── ui/                     # Reusable UI primitives (Modal)
+│   │   │   ├── context/                    # AuthContext & useAuth hook
+│   │   │   └── pages/                      # NotFoundPage
+│   │   ├── services/                       # Centralized feature service re-exports
+│   │   └── styles/                         # Global theme & typography styles (global.css)
+│   ├── .env.example                        # Frontend environment template
+│   ├── vite.config.js                      # Vite config with local proxy to :5000
 │   └── package.json
 │
 ├── database/
-│   ├── schema.sql              # 17 tables with FK constraints
-│   └── seed.sql                # Demo data
+│   ├── postgres/                           # PostgreSQL schema and seed
+│   │   ├── schema.sql                      # 17 PostgreSQL tables with relational integrity
+│   │   └── seed.sql                        # Default local development demo data
+│   ├── mysql/                              # MySQL schema and seed
+│   │   ├── schema.sql
+│   │   └── seed.sql
+│   ├── schema.sql                          # Primary database schema (PostgreSQL)
+│   └── seed.sql                            # Primary seed data (PostgreSQL)
 │
-└── docker-compose.yml          # MySQL 8 container
+├── docker-compose.yml                      # Optional local MySQL container
+├── package.json                            # Root orchestration scripts
+└── README.md
 ```
+
+---
+
+## Prerequisites
+
+- **Node.js**: ≥ 18
+- **PostgreSQL**: 15+ (Default local database)
+
+---
+
+## Quick Start (Local Setup)
+
+### 1. Database Setup (PostgreSQL)
+
+Create the local database and run the schema and seed scripts:
+
+```bash
+# Create database
+psql -U postgres -c "CREATE DATABASE xenotrack;"
+
+# Run schema and seed
+psql -U postgres -d xenotrack -f database/postgres/schema.sql
+psql -U postgres -d xenotrack -f database/postgres/seed.sql
+```
+
+*(Alternatively, use `database/schema.sql` and `database/seed.sql` which default to PostgreSQL).*
+
+---
+
+### 2. Configure Environment Files
+
+**Backend:**
+Copy `backend/.env.example` to `backend/.env` (configured for PostgreSQL on port 5432 with default user `postgres` / password `root`).
+
+**Frontend:**
+Copy `frontend/.env.example` to `frontend/.env` (configured for `http://localhost:5000/api`).
+
+---
+
+### 3. Install Dependencies & Start Services
+
+You can install and run both servers from the project root or individually:
+
+#### Option A: From Root
+```bash
+# Install dependencies for both backend and frontend
+npm run install:all
+
+# In terminal 1: Start backend
+npm run start:backend
+
+# In terminal 2: Start frontend
+npm run start:frontend
+```
+
+#### Option B: Individually
+```bash
+# Terminal 1 - Backend
+cd backend
+npm install
+npm run dev
+
+# Terminal 2 - Frontend
+cd frontend
+npm install
+npm run dev
+```
+
+- Backend API: **http://localhost:5000**
+- Frontend Client: **http://localhost:3000**
+
+---
+
+## Demo Credentials (Local Development)
+
+| Role | Email | Password |
+|---|---|---|
+| **Admin** | admin@xenotrack.com | 12345xeno |
+| **Staff** | staff@xenotrack.local | Staff@1234 |
+
+---
+
+## Running Verification & Tests
+
+### Backend Unit & Integration Tests
+```bash
+npm run test:backend
+# or: cd backend && npm test
+```
+All 17 test suites verify authentication, calculations, permissions, and database operations.
+
+### Frontend Production Build
+```bash
+npm run build:frontend
+# or: cd frontend && npm run build
+```
+Compiles with Vite with zero errors.
 
 ---
 
 ## API Endpoints
 
-| Group | Methods |
-|---|---|
-| `/api/auth` | login, logout, refresh, me, change-password |
-| `/api/dashboard` | admin, staff |
-| `/api/members` | CRUD + status patch |
-| `/api/programs` | CRUD |
-| `/api/groups` | CRUD + staff assign/remove |
-| `/api/enrollments` | create, update |
-| `/api/staff` | CRUD + reset-password |
-| `/api/attendance/sessions` | list, create |
-| `/api/attendance/records` | bulk save, update |
-| `/api/fees/plans` | CRUD |
-| `/api/fees/records` | CRUD |
-| `/api/fees/payments` | list, create, receipt, reverse |
-| `/api/reports` | attendance, collections, outstanding-fees |
-| `/api/settings` | get/update, activity-logs |
-| `/api/health` | health check |
-
----
-
-## Running Tests
-
-```bash
-cd backend
-npm test
-```
-
-Tests cover: auth validation, role permissions, fee calculations, member code generation, attendance status validation.
+| Module | Route | Methods |
+|---|---|---|
+| **Auth** | `/api/auth` | `POST /login`, `POST /logout`, `POST /refresh`, `GET /me`, `POST /change-password` |
+| **Dashboard** | `/api/dashboard` | `GET /admin`, `GET /staff` |
+| **Members** | `/api/members` | `GET /`, `POST /`, `GET /:id`, `PUT /:id`, `PATCH /:id/status` |
+| **Programs** | `/api/programs` | `GET /`, `POST /`, `GET /:id`, `PUT /:id`, `DELETE /:id` |
+| **Groups** | `/api/groups` | `GET /`, `POST /`, `GET /:id`, `PUT /:id`, `POST /:id/staff`, `DELETE /:id/staff/:staffId` |
+| **Enrollments** | `/api/enrollments` | `POST /`, `PATCH /:id` |
+| **Staff** | `/api/staff` | `GET /`, `POST /`, `GET /:id`, `PUT /:id`, `POST /:id/reset-password` |
+| **Attendance** | `/api/attendance` | `GET /sessions`, `POST /sessions`, `GET /sessions/:id`, `POST /records/bulk`, `PUT /records/:id` |
+| **Fees** | `/api/fees` | `GET /plans`, `POST /plans`, `PUT /plans/:id`, `GET /records`, `POST /records`, `PUT /records/:id` |
+| **Payments** | `/api/payments` | `GET /`, `POST /`, `GET /:id/receipt`, `POST /:id/reverse` |
+| **Reports** | `/api/reports` | `GET /attendance`, `GET /collections`, `GET /outstanding-fees` |
+| **Settings** | `/api/settings` | `GET /`, `PUT /`, `GET /activity-logs` |
+| **Health** | `/api/health` | `GET /` |
 
 ---
 
 ## Security Features
 
-- ✅ bcrypt password hashing
-- ✅ Short-lived JWT access tokens (15 min) + rotating refresh tokens
-- ✅ Login rate limiting (10 req / 15 min)
-- ✅ Parameterized MySQL queries (no SQL injection)
-- ✅ Role + institute-level authorization on every route
-- ✅ Transaction-safe payment recording
-- ✅ No permanent deletion of financial records
-- ✅ Activity audit trail for all important actions
-- ✅ No secrets in frontend code
-
----
-
-## Environment Variables
-
-### Backend `.env`
-
-| Variable | Default | Description |
-|---|---|---|
-| `PORT` | 5000 | API server port |
-| `DB_HOST` | localhost | MySQL host |
-| `DB_USER` | — | MySQL user |
-| `DB_PASSWORD` | — | MySQL password |
-| `DB_NAME` | xenotrack | Database name |
-| `JWT_SECRET` | — | Access token secret (32+ chars) |
-| `JWT_EXPIRES_IN` | 15m | Access token expiry |
-| `JWT_REFRESH_SECRET` | — | Refresh token secret (32+ chars) |
-| `JWT_REFRESH_EXPIRES_IN` | 7d | Refresh token expiry |
-| `FRONTEND_URL` | http://localhost:3000 | CORS origin |
-
-### Frontend `.env.local`
-
-| Variable | Default | Description |
-|---|---|---|
-| `VITE_API_URL` | http://localhost:5000/api | Backend API base URL |
+- **bcrypt Hashing**: Passwords stored as salted bcrypt hashes.
+- **Dual-Token JWT**: Short-lived access tokens (15m) + secure rotating refresh tokens (7d).
+- **Brute-Force Protection**: Rate limiting on sensitive authentication routes (`express-rate-limit`).
+- **Parameterized SQL Queries**: Complete protection against SQL injection.
+- **RBAC & Multi-Tenant Scoping**: Role (`admin`/`staff`) and institute-level scoping enforced on all routes.
+- **Financial Audit Logging**: Non-destructive payment reversals and full activity trail.
 
 ---
 
