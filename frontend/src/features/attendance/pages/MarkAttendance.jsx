@@ -23,13 +23,14 @@ export default function MarkAttendance() {
     try {
       const r = await attendanceService.getSessionRecords(sessionId);
       setSession(r.data.data.session);
-      const initialRecords = (r.data.data.members || []).map(m => ({
-        member_id: m.member_id,
+      const membersList = r.data.data.members || r.data.data.records || [];
+      const initialRecords = membersList.map(m => ({
+        member_id: m.member_id || m.id,
         full_name: m.full_name,
         member_code: m.member_code,
-        attendance_record_id: m.attendance_record_id || null,
-        status: m.status || 'present',
-        notes: m.notes || '',
+        attendance_record_id: m.attendance_record_id || m.record_id || null,
+        status: m.status || m.attendance_status || 'present',
+        notes: m.notes || m.note || '',
       }));
       setRecords(initialRecords);
     } catch { toast.error('Failed to load session'); navigate('/attendance'); }

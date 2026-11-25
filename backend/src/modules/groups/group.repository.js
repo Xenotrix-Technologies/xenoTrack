@@ -122,7 +122,7 @@ class GroupRepository {
 
   async findExistingEnrollment(memberId, programId, groupId) {
     const [existing] = await db.query(
-      'SELECT id FROM enrollments WHERE member_id=? AND program_id=? AND group_id IS NOT DISTINCT FROM ?',
+      'SELECT id FROM enrollments WHERE member_id=? AND program_id=? AND group_id <=> ?',
       [memberId, programId, groupId || null]
     );
     return existing[0] || null;

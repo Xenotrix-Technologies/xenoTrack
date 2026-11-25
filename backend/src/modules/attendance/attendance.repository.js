@@ -76,17 +76,23 @@ class AttendanceRepository {
   }
 
   async findSessionById(sessionId, instituteId) {
-    const [sess] = await db.query('SELECT * FROM attendance_sessions WHERE id = ? AND institute_id = ?', [
-      sessionId,
-      instituteId
-    ]);
+    const [sess] = await db.query(
+      `SELECT s.*, g.name as group_name, p.name as program_name
+       FROM attendance_sessions s
+       JOIN \`groups\` g ON g.id = s.group_id
+       JOIN programs p ON p.id = g.program_id
+       WHERE s.id = ? AND s.institute_id = ?`,
+      [sessionId, instituteId]
+    );
     return sess[0] || null;
   }
 
   async getSessionRecords(sessionId, groupId) {
     const [enrolled] = await db.query(
-      `SELECT m.id, m.member_code, m.full_name, m.phone, m.profile_photo,
-              ar.id as record_id, ar.status as attendance_status, ar.note,
+      `SELECT m.id, m.id as member_id, m.member_code, m.full_name, m.phone, m.profile_photo,
+              ar.id as record_id, ar.id as attendance_record_id,
+              ar.status, ar.status as attendance_status,
+              ar.note, ar.note as notes,
               ar.marked_by, ar.marked_at, u.full_name as marked_by_name
        FROM enrollments e
        JOIN members m ON m.id = e.member_id

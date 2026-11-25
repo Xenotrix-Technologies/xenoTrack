@@ -65,7 +65,7 @@ class AttendanceService {
     }
 
     const records = await attendanceRepository.getSessionRecords(sessionId, session.group_id);
-    return { session, records };
+    return { session, records, members: records };
   }
 
   async saveBulkAttendance({ sessionId, records, instituteId, userId, ipAddress }) {
@@ -89,7 +89,7 @@ class AttendanceService {
           `INSERT INTO attendance_records (session_id, member_id, status, note, marked_by)
            VALUES (?, ?, ?, ?, ?)
            ON DUPLICATE KEY UPDATE status = VALUES(status), note = VALUES(note), modified_by = ?, modified_at = NOW()`,
-          [sessionId, rec.member_id, rec.status, rec.note || null, userId, userId]
+          [sessionId, rec.member_id, rec.status, rec.note || rec.notes || null, userId, userId]
         );
       }
 
@@ -144,8 +144,9 @@ class AttendanceService {
       }
     }
 
-    await attendanceRepository.updateRecord(id, status, note, user.id);
-    await activityLogger.log(instituteId, user.id, 'EDIT_ATTENDANCE_RECORD', 'attendance_record', id, null, { status, note }, ipAddress);
+    const finalNote = note || data.notes || null;
+    await attendanceRepository.updateRecord(id, status, finalNote, user.id);
+    await activityLogger.log(instituteId, user.id, 'EDIT_ATTENDANCE_RECORD', 'attendance_record', id, null, { status, note: finalNote }, ipAddress);
     return { success: true, message: 'Attendance updated' };
   }
 }
