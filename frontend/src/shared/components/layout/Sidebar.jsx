@@ -107,14 +107,7 @@ export default function Sidebar({ open, onClose }) {
           </span>
         </NavLink>
         <button
-          className="nav-item"
-          style={{
-            width: '100%',
-            border: 'none',
-            background: 'none',
-            color: '#EF4444',
-            cursor: 'pointer'
-          }}
+          className="nav-item nav-item-logout"
           onClick={handleLogout}
         >
           <span className="nav-item-icon"><BsBoxArrowRight /></span>
